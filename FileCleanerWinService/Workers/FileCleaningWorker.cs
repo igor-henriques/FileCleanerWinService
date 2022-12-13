@@ -13,7 +13,7 @@ internal sealed class FileCleaningWorker : BackgroundService
         this._logger = logger;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation($"Starting {Constants.ServiceName} at {DateTime.UtcNow.ToLongTimeString()}");
 
@@ -28,23 +28,18 @@ internal sealed class FileCleaningWorker : BackgroundService
                                              .ToList();
 
                 filesToDelete.ForEach(File.Delete); 
-            }            
+            }                            
         }
         catch (Exception ex)
         {
             _logger.LogInformation($"{Constants.ServiceName} failed: {ex.Message}");
-            await StopAsync(stoppingToken);
-            throw;
+            Environment.Exit(999);            
         }
         finally
         {
             _logger.LogInformation($"Finishing {Constants.ServiceName} at {DateTime.UtcNow.ToLongTimeString()}");
         }
-    }
 
-    public override Task StopAsync(CancellationToken cancellationToken)
-    {
-        Environment.Exit(Environment.ExitCode);
-        return base.StopAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 }
